@@ -193,6 +193,8 @@ typedef enum {
 
 - (void)resumeGame
 {
+  self.gameStatus = WSNGameStatusPlaying;
+  
   [self.infoLabel removeFromSuperview];
   
   self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:SECONDS_PER_MOVE
@@ -225,7 +227,7 @@ typedef enum {
 
 - (void)swipedUp:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
   {
     self.direction = WSNSnakeDirectionUp;
   }
@@ -233,7 +235,7 @@ typedef enum {
 
 - (void)swipedRight:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
   {
     self.direction = WSNSnakeDirectionRight;
   }
@@ -241,7 +243,7 @@ typedef enum {
 
 - (void)swipedDown:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
   {
     self.direction = WSNSnakeDirectionDown;
   }
@@ -249,7 +251,7 @@ typedef enum {
 
 - (void)swipedLeft:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
   {
     self.direction = WSNSnakeDirectionLeft;
   }
@@ -257,7 +259,7 @@ typedef enum {
 
 - (void)tappedScreen:(UITapGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateRecognized)
+  if (gesture.state == UIGestureRecognizerStateEnded)
   {
     if (self.gameStatus == WSNGameStatusSetup || self.gameStatus == WSNGameStatusPaused)
     {
@@ -369,7 +371,7 @@ typedef enum {
   if (!_infoLabel)
   {
     _infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 70, self.view.frame.size.width-40, 200)];
-    _infoLabel.backgroundColor = [UIColor grayColor];
+    _infoLabel.backgroundColor = [UIColor colorWithWhite:.5 alpha:.5];
     _infoLabel.numberOfLines = 0;
   }
   return _infoLabel;
