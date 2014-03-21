@@ -25,7 +25,7 @@
 
 - (void)loadView
 {
-  self.view = [[WSNSnakeView alloc] init];
+  self.view = [WSNSnakeView snakeViewWithSquareWidth:5 delegate:nil];
 }
 
 #pragma mark - Public Methods
