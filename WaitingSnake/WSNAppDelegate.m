@@ -7,13 +7,18 @@
 //
 
 #import "WSNAppDelegate.h"
+// View Controller
+#import "WSNSnakeViewController.h"
+
 
 @implementation WSNAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  // Override point for customization after application launch.
+  
+  self.window.rootViewController = [[WSNSnakeViewController alloc] init];
+  
   self.window.backgroundColor = [UIColor whiteColor];
   [self.window makeKeyAndVisible];
   return YES;

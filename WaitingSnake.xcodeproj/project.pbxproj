@@ -20,6 +20,8 @@
 		36D6680E18DC9DC8000A0444 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 36D6680C18DC9DC8000A0444 /* InfoPlist.strings */; };
 		36D6681018DC9DC8000A0444 /* WaitingSnakeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 36D6680F18DC9DC8000A0444 /* WaitingSnakeTests.m */; };
 		36D6681C18DC9E96000A0444 /* WSNSnakeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 36D6681B18DC9E96000A0444 /* WSNSnakeViewController.m */; };
+		36D6681F18DC9F74000A0444 /* WSNSnakeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 36D6681E18DC9F74000A0444 /* WSNSnakeView.m */; };
+		36D6682218DCA03A000A0444 /* WSNPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 36D6682118DCA03A000A0444 /* WSNPoint.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +53,10 @@
 		36D6680F18DC9DC8000A0444 /* WaitingSnakeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaitingSnakeTests.m; sourceTree = "<group>"; };
 		36D6681A18DC9E96000A0444 /* WSNSnakeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WSNSnakeViewController.h; sourceTree = "<group>"; };
 		36D6681B18DC9E96000A0444 /* WSNSnakeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WSNSnakeViewController.m; sourceTree = "<group>"; };
+		36D6681D18DC9F74000A0444 /* WSNSnakeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WSNSnakeView.h; sourceTree = "<group>"; };
+		36D6681E18DC9F74000A0444 /* WSNSnakeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WSNSnakeView.m; sourceTree = "<group>"; };
+		36D6682018DCA03A000A0444 /* WSNPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WSNPoint.h; sourceTree = "<group>"; };
+		36D6682118DCA03A000A0444 /* WSNPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WSNPoint.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +159,10 @@
 			children = (
 				36D6681A18DC9E96000A0444 /* WSNSnakeViewController.h */,
 				36D6681B18DC9E96000A0444 /* WSNSnakeViewController.m */,
+				36D6681D18DC9F74000A0444 /* WSNSnakeView.h */,
+				36D6681E18DC9F74000A0444 /* WSNSnakeView.m */,
+				36D6682018DCA03A000A0444 /* WSNPoint.h */,
+				36D6682118DCA03A000A0444 /* WSNPoint.m */,
 			);
 			path = WaitingSnakeLibrary;
 			sourceTree = "<group>";
@@ -255,6 +265,8 @@
 			files = (
 				36D667F718DC9DC7000A0444 /* main.m in Sources */,
 				36D667FB18DC9DC7000A0444 /* WSNAppDelegate.m in Sources */,
+				36D6681F18DC9F74000A0444 /* WSNSnakeView.m in Sources */,
+				36D6682218DCA03A000A0444 /* WSNPoint.m in Sources */,
 				36D6681C18DC9E96000A0444 /* WSNSnakeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
