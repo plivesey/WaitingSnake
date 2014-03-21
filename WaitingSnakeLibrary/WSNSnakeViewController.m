@@ -110,6 +110,7 @@ typedef enum {
 
 - (void)pause
 {
+  self.gameStatus = WSNGameStatusPaused;
   self.infoLabel.text = @"Game Paused.\nTap screen to continue.";
   [self.snakeView addSubview:self.infoLabel];
   [self.gameTimer invalidate];
