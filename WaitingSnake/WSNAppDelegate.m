@@ -17,7 +17,7 @@
 {
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   
-  self.window.rootViewController = [[WSNSnakeViewController alloc] init];
+  self.window.rootViewController = [WSNSnakeViewController snakeViewControllerWithSquareSize:30];
   
   self.window.backgroundColor = [UIColor whiteColor];
   [self.window makeKeyAndVisible];
