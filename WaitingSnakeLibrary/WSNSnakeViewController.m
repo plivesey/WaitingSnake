@@ -75,15 +75,15 @@ typedef enum {
 
 + (instancetype)snakeViewControllerWithSquareSize:(NSInteger)squareSize
 {
-    WSNSnakeViewController *viewController = [[[self class] alloc] init];
-    viewController.squareSize = squareSize;
-    
-    viewController.startingDelay = SECONDS_PER_MOVE;
-    viewController.speedupDelay = 5.0;
-    viewController.numberOfSpeedups = 10;
-    viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
-
-    return viewController;
+  WSNSnakeViewController *viewController = [[[self class] alloc] init];
+  viewController.squareSize = squareSize;
+  
+  viewController.startingDelay = SECONDS_PER_MOVE;
+  viewController.speedupDelay = 5.0;
+  viewController.numberOfSpeedups = 10;
+  viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
+  
+  return viewController;
 }
 
 - (void)viewDidLoad
@@ -521,6 +521,7 @@ typedef enum {
     _infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 70, self.view.frame.size.width-40, 200)];
     _infoLabel.backgroundColor = [UIColor colorWithWhite:.5 alpha:.5];
     _infoLabel.numberOfLines = 0;
+    _infoLabel.textAlignment = NSTextAlignmentCenter;
   }
   return _infoLabel;
 }
