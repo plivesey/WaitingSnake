@@ -10,9 +10,16 @@
 
 @implementation WSNSnakeView
 
-- (void)drawRect:(CGRect)rect
-{
-  
++ (instancetype)snakeViewWithFrame:(CGRect)frame
+                          rowCount:(NSUInteger)rows
+                       columnCount:(NSUInteger)columns
+                          delegate:(id<WSNSnakeViewProtocol>)delegate s{
+    // TODO: Implement
+    return nil;
+}
+
+- (void)drawRect:(CGRect)rect {
+    // TODO: Implement
 }
 
 @end

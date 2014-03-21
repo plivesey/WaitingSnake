@@ -8,8 +8,17 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol WSNSnakeViewProtocol <NSObject>
+- (UIColor *)colorForSnakePointAtIndex:(NSUInteger)index;
+- (UIColor *)colorForFoodPointAtIndex:(NSUInteger)index;
+- (UIColor *)colorForHighlightedPointAtIndex:(NSUInteger)index;
+@end
 
 @interface WSNSnakeView : UIView
+
+@property (nonatomic, weak) id<WSNSnakeViewProtocol> delegate;
+
+@property (nonatomic, strong) UIColor *backgroundColor;
 
 /// Used to color the snake. Setting this property will redraw the screen.
 @property (nonatomic, strong) NSArray *snakePoints;
@@ -18,7 +27,12 @@
 /// Used to color food points. Setting this property will redraw the screen.
 @property (nonatomic, strong) NSArray *foodPoints;
 
-/// Width of a game point. Should be set once at the start. The width and height of the view must be divisible by this number.
-@property (nonatomic) NSUInteger pointWidth;
+/*!
+ Instantiate and return a new instance of the snake view controller
+ */
++ (instancetype)snakeViewWithFrame:(CGRect)frame
+                          rowCount:(NSUInteger)rows
+                       columnCount:(NSUInteger)columns
+                          delegate:(id<WSNSnakeViewProtocol>)delegate;
 
 @end
