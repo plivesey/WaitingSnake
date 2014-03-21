@@ -201,22 +201,34 @@ typedef enum {
 
 - (void)swipedUp:(UISwipeGestureRecognizer *)gesture
 {
-  
+  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  {
+    self.direction = WSNSnakeDirectionUp;
+  }
 }
 
 - (void)swipedRight:(UISwipeGestureRecognizer *)gesture
 {
-  
+  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  {
+    self.direction = WSNSnakeDirectionRight;
+  }
 }
 
 - (void)swipedDown:(UISwipeGestureRecognizer *)gesture
 {
-  
+  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  {
+    self.direction = WSNSnakeDirectionDown;
+  }
 }
 
 - (void)swipedLeft:(UISwipeGestureRecognizer *)gesture
 {
-  
+  if (gesture.state == UIGestureRecognizerStateRecognized && self.gameStatus == WSNGameStatusPlaying)
+  {
+    self.direction = WSNSnakeDirectionLeft;
+  }
 }
 
 - (void)tappedScreen:(UITapGestureRecognizer *)gesture
@@ -234,7 +246,95 @@ typedef enum {
                     
 - (void)timerFired
 {
+  WSNPoint *firstPoint = [self.snakeArray firstObject];
   
+  [self.snakeArray insertObject:[self nextPointFromCurrentPoint:firstPoint]
+                        atIndex:0];
+  // New current point
+  self.currentPoint = [self.snakeArray firstObject];
+  
+  if ([self.snakeArray containsObject:self.foodPoint])
+  {
+    // We ate some food. Array is now one longer and we need more food.
+    [self findNewFoodPoint];
+  }
+  else
+  {
+    // We're moving, so remove last point
+    [self.snakeArray removeLastObject];
+  }
+  
+  // Now let's check for collisions. Only the new point can possible collide because the rest haven't moved.
+  WSNPoint *collisionPoint = [self collisionPoint];
+  if (collisionPoint)
+  {
+    [[[UIAlertView alloc] initWithTitle:@"Lose"
+                                message:nil
+                               delegate:nil
+                      cancelButtonTitle:@"OK"
+                      otherButtonTitles:nil] show];
+    [self.gameTimer invalidate];
+    self.gameTimer = nil;
+    
+    self.snakeView.highlightedPoints = @[collisionPoint];
+  }
+  
+  self.snakeView.snakePoints = self.snakeArray;
+  self.snakeView.foodPoints = @[self.foodPoint];
+}
+
+- (WSNPoint *)nextPointFromCurrentPoint:(WSNPoint *)currentPoint
+{
+  NSUInteger nextPointX = currentPoint.x;
+  NSUInteger nextPointY = currentPoint.y;
+  switch (self.direction)
+  {
+    case WSNSnakeDirectionUp:
+      nextPointY--;
+      break;
+    case WSNSnakeDirectionDown:
+      nextPointY++;
+      break;
+    case WSNSnakeDirectionLeft:
+      nextPointY++;
+      break;
+    case WSNSnakeDirectionRight:
+      nextPointY++;
+      break;
+  }
+  return [WSNPoint pointWithX:nextPointX y:nextPointY];
+}
+
+/*!
+ Nil if no collision
+ */
+- (WSNPoint *)collisionPoint
+{
+  for (NSUInteger i = 1; i<[self.snakeArray count]; i++)
+  {
+    if ([self.currentPoint isEqual:self.snakeArray[i]])
+    {
+      // Current point is the same as some other point in the snake
+      return self.currentPoint;
+    }
+  }
+  if (self.currentPoint.x < 0)
+  {
+    return [WSNPoint pointWithX:0 y:self.currentPoint.y];
+  }
+  if (self.currentPoint.x >= self.snakeView.columns)
+  {
+    return [WSNPoint pointWithX:self.snakeView.columns-1 y:self.currentPoint.y];
+  }
+  if (self.currentPoint.y < 0)
+  {
+    return [WSNPoint pointWithX:self.currentPoint.x y:0];
+  }
+  if (self.currentPoint.y >= self.snakeView.rows)
+  {
+    return [WSNPoint pointWithX:self.currentPoint.x y:self.snakeView.rows-1];
+  }
+  return nil;
 }
 
 #pragma mark - Properties
