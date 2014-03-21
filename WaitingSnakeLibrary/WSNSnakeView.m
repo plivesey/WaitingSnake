@@ -51,7 +51,6 @@
 }
 
 - (void)drawRect:(CGRect)rect {
-    NSLog(@"drawRect called...");
     CGFloat xCursor;
     CGFloat yCursor = self.verticalPadding;
     CGFloat squareWidth = self.squareWidth;

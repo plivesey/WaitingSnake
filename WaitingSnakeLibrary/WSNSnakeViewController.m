@@ -43,7 +43,9 @@ typedef enum {
 @property (nonatomic, strong) WSNPoint *currentPoint;
 @property (nonatomic, strong) WSNPoint *foodPoint;
 
-@property (nonatomic) WSNSnakeDirection direction;
+@property (nonatomic, strong) NSMutableArray *pendingDirections;
+@property (nonatomic) WSNSnakeDirection currentDirection;
+
 @property (nonatomic) WSNGameStatus gameStatus;
 
 @property (nonatomic, strong) NSTimer *gameTimer;
@@ -200,7 +202,7 @@ typedef enum {
     // This will keep overriding until the last point is the starting point
     self.currentPoint = point;
   }
-  self.direction = WSNSnakeDirectionRight;
+  self.currentDirection = WSNSnakeDirectionRight;
   
   [self findNewFoodPoint];
   
@@ -294,40 +296,36 @@ typedef enum {
 - (void)swipedUp:(UISwipeGestureRecognizer *)gesture
 {
   if (gesture.state == UIGestureRecognizerStateEnded &&
-      self.gameStatus == WSNGameStatusPlaying &&
-      self.direction != WSNSnakeDirectionDown)
+      self.gameStatus == WSNGameStatusPlaying)
   {
-    self.direction = WSNSnakeDirectionUp;
+    [self.pendingDirections addObject:@(WSNSnakeDirectionUp)];
   }
 }
 
 - (void)swipedRight:(UISwipeGestureRecognizer *)gesture
 {
   if (gesture.state == UIGestureRecognizerStateEnded &&
-      self.gameStatus == WSNGameStatusPlaying &&
-      self.direction != WSNSnakeDirectionLeft)
+      self.gameStatus == WSNGameStatusPlaying)
   {
-    self.direction = WSNSnakeDirectionRight;
+    [self.pendingDirections addObject:@(WSNSnakeDirectionRight)];
   }
 }
 
 - (void)swipedDown:(UISwipeGestureRecognizer *)gesture
 {
   if (gesture.state == UIGestureRecognizerStateEnded &&
-      self.gameStatus == WSNGameStatusPlaying &&
-      self.direction != WSNSnakeDirectionUp)
+      self.gameStatus == WSNGameStatusPlaying)
   {
-    self.direction = WSNSnakeDirectionDown;
+    [self.pendingDirections addObject:@(WSNSnakeDirectionDown)];
   }
 }
 
 - (void)swipedLeft:(UISwipeGestureRecognizer *)gesture
 {
   if (gesture.state == UIGestureRecognizerStateEnded &&
-      self.gameStatus == WSNGameStatusPlaying &&
-      self.direction != WSNSnakeDirectionRight)
+      self.gameStatus == WSNGameStatusPlaying)
   {
-    self.direction = WSNSnakeDirectionLeft;
+    [self.pendingDirections addObject:@(WSNSnakeDirectionLeft)];
   }
 }
 
@@ -351,44 +349,44 @@ typedef enum {
 }
 
 #pragma mark - Timer
-                    
+
 - (void)timerFired
 {
-    WSNPoint *firstPoint = [self.snakeArray firstObject];
-    
-    [self.snakeArray insertObject:[self nextPointFromCurrentPoint:firstPoint]
-                          atIndex:0];
-    // New current point
-    self.currentPoint = [self.snakeArray firstObject];
-    
-    if ([self.snakeArray containsObject:self.foodPoint])
-    {
-        // We ate some food. Array is now one longer and we need more food.
-        [self findNewFoodPoint];
-    }
-    else
-    {
-        // We're moving, so remove last point
-        [self.snakeArray removeLastObject];
-    }
-    
-    // Now let's check for collisions. Only the new point can possible collide because the rest haven't moved.
-    WSNPoint *collisionPoint = [self collisionPoint];
-    if (collisionPoint)
-    {
-        [self endGame:NO];
-        self.snakeView.highlightedPoints = @[collisionPoint];
-    }
-    
-    self.snakeView.snakePoints = self.snakeArray;
-    self.snakeView.foodPoints = @[self.foodPoint];
-    if ([self.gameTimer isValid]) {
-        self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
-                                                          target:self
-                                                        selector:@selector(timerFired)
-                                                        userInfo:nil
-                                                         repeats:NO];
-    }
+  WSNPoint *firstPoint = [self.snakeArray firstObject];
+  
+  [self.snakeArray insertObject:[self nextPointFromCurrentPoint:firstPoint]
+                        atIndex:0];
+  // New current point
+  self.currentPoint = [self.snakeArray firstObject];
+  
+  if ([self.snakeArray containsObject:self.foodPoint])
+  {
+    // We ate some food. Array is now one longer and we need more food.
+    [self findNewFoodPoint];
+  }
+  else
+  {
+    // We're moving, so remove last point
+    [self.snakeArray removeLastObject];
+  }
+  
+  // Now let's check for collisions. Only the new point can possible collide because the rest haven't moved.
+  WSNPoint *collisionPoint = [self collisionPoint];
+  if (collisionPoint)
+  {
+    [self endGame:NO];
+    self.snakeView.highlightedPoints = @[collisionPoint];
+  }
+  
+  self.snakeView.snakePoints = self.snakeArray;
+  self.snakeView.foodPoints = @[self.foodPoint];
+  if ([self.gameTimer isValid]) {
+    self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
+                                                      target:self
+                                                    selector:@selector(timerFired)
+                                                    userInfo:nil
+                                                     repeats:NO];
+  }
 }
 
 - (void)speedupTimerFired {
@@ -408,39 +406,78 @@ typedef enum {
 
 - (WSNPoint *)nextPointFromCurrentPoint:(WSNPoint *)currentPoint
 {
-    NSInteger nextPointX = currentPoint.x;
-    NSInteger nextPointY = currentPoint.y;
-    switch (self.direction)
+  NSInteger nextPointX = currentPoint.x;
+  NSInteger nextPointY = currentPoint.y;
+  
+  WSNSnakeDirection nextDirection = [self nextSnakeDirection];
+  self.currentDirection = nextDirection;
+  
+  switch (nextDirection)
+  {
+    case WSNSnakeDirectionUp:
+      nextPointY--;
+      break;
+    case WSNSnakeDirectionDown:
+      nextPointY++;
+      break;
+    case WSNSnakeDirectionLeft:
+      nextPointX--;
+      break;
+    case WSNSnakeDirectionRight:
+      nextPointX++;
+      break;
+  }
+  if (self.wallsWrapAround) {
+    // Wrap the snake around if necessary
+    if (nextPointX < 0) {
+      nextPointX = self.snakeView.columns - 1;
+    }
+    else if (nextPointX >= self.snakeView.columns) {
+      nextPointX = 0;
+    }
+    if (nextPointY < 0) {
+      nextPointY = self.snakeView.rows - 1;
+    }
+    else if (nextPointY >= self.snakeView.rows) {
+      nextPointY = 0;
+    }
+  }
+  return [WSNPoint pointWithX:nextPointX y:nextPointY];
+}
+
+- (WSNSnakeDirection)nextSnakeDirection
+{
+  WSNSnakeDirection newDirection = self.currentDirection;
+  while ([self.pendingDirections count])
+  {
+    WSNSnakeDirection nextPending = [[self.pendingDirections firstObject] integerValue];
+    [self.pendingDirections removeObjectAtIndex:0];
+    if (self.currentDirection == WSNSnakeDirectionLeft || self.currentDirection == WSNSnakeDirectionRight)
     {
-        case WSNSnakeDirectionUp:
-            nextPointY--;
-            break;
-        case WSNSnakeDirectionDown:
-            nextPointY++;
-            break;
-        case WSNSnakeDirectionLeft:
-            nextPointX--;
-            break;
-        case WSNSnakeDirectionRight:
-            nextPointX++;
-            break;
+      // Current is left/right
+      if (nextPending == WSNSnakeDirectionUp || nextPending == WSNSnakeDirectionDown)
+      {
+        // Next is up or down. So good. Let's do this. Otherwise, just throw it out because it doesn't make sense.
+        newDirection = nextPending;
+        break;
+      }
     }
-    if (self.wallsWrapAround) {
-        // Wrap the snake around if necessary
-        if (nextPointX < 0) {
-            nextPointX = self.snakeView.columns - 1;
-        }
-        else if (nextPointX >= self.snakeView.columns) {
-            nextPointX = 0;
-        }
-        if (nextPointY < 0) {
-            nextPointY = self.snakeView.rows - 1;
-        }
-        else if (nextPointY >= self.snakeView.rows) {
-            nextPointY = 0;
-        }
+    else if (self.currentDirection == WSNSnakeDirectionUp || self.currentDirection == WSNSnakeDirectionDown)
+    {
+      // Current is up/down
+      if (nextPending == WSNSnakeDirectionLeft || nextPending == WSNSnakeDirectionRight)
+      {
+        // Next is left/right. So good. Otherwise, just throw it out because it doesn't make sense.
+        newDirection = nextPending;
+        break;
+      }
     }
-    return [WSNPoint pointWithX:nextPointX y:nextPointY];
+    else
+    {
+      NSAssert(NO, @"Bad direction");
+    }
+  }
+  return newDirection;
 }
 
 /*!
@@ -486,6 +523,15 @@ typedef enum {
     _infoLabel.numberOfLines = 0;
   }
   return _infoLabel;
+}
+
+- (NSMutableArray *)pendingDirections
+{
+  if (!_pendingDirections)
+  {
+    _pendingDirections = [NSMutableArray array];
+  }
+  return _pendingDirections;
 }
 
 #pragma mark - Snake View Delegate
