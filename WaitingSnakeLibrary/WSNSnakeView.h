@@ -18,4 +18,7 @@
 /// Used to color food points. Setting this property will redraw the screen.
 @property (nonatomic, strong) NSArray *foodPoints;
 
+/// Width of a game point. Should be set once at the start. The width and height of the view must be divisible by this number.
+@property (nonatomic) NSUInteger pointWidth;
+
 @end
