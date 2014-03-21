@@ -51,6 +51,9 @@ typedef enum {
 
 @property (nonatomic) BOOL initialized;
 
+@property (nonatomic, strong) NSArray *possibleSnakeColors;
+@property (nonatomic, strong) NSArray *currentSnakeColors;
+
 @end
 
 @implementation WSNSnakeViewController
@@ -98,6 +101,17 @@ typedef enum {
                                            selector:@selector(pause)
                                                name:UIApplicationWillResignActiveNotification
                                              object:nil];
+  
+  // These colors are hilariously ugly
+  NSMutableArray *possibleSnakeColors = [NSMutableArray array];
+  [possibleSnakeColors addObject:[UIColor purpleColor]];
+  [possibleSnakeColors addObject:[UIColor yellowColor]];
+  [possibleSnakeColors addObject:[UIColor greenColor]];
+  [possibleSnakeColors addObject:[UIColor blueColor]];
+  [possibleSnakeColors addObject:[UIColor cyanColor]];
+  [possibleSnakeColors addObject:[UIColor orangeColor]];
+  [possibleSnakeColors addObject:[UIColor magentaColor]];
+  self.possibleSnakeColors = possibleSnakeColors;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -153,6 +167,8 @@ typedef enum {
   self.snakeArray = [NSMutableArray array];
   self.currentPoint = nil;
   
+  [self resetSnakeColors];
+  
   NSInteger startingY = self.snakeView.rows / 2;
   for (int i = 0; i<STARTING_LENGTH; i++)
   {
@@ -202,6 +218,18 @@ typedef enum {
   self.foodPoint = [possiblePoints objectAtIndex:index];
 }
 
+- (void)resetSnakeColors
+{
+  NSUInteger numberOfColors = rand() % 4 + 1;
+  NSMutableArray *colors = [NSMutableArray arrayWithCapacity:numberOfColors];
+  for (int i = 0; i<numberOfColors; i++)
+  {
+    NSUInteger index = rand() % [self.possibleSnakeColors count];
+    [colors addObject:self.possibleSnakeColors[index]];
+  }
+  self.currentSnakeColors = colors;
+}
+
 - (void)resumeGame
 {
   self.gameStatus = WSNGameStatusPlaying;
@@ -227,7 +255,7 @@ typedef enum {
   }
   else
   {
-    self.infoLabel.text = [NSString stringWithFormat:@"Score: %d\nTap to play again.", [self.snakeArray count]];
+    self.infoLabel.text = [NSString stringWithFormat:@"Score: %lu\nTap to play again.", (unsigned long)[self.snakeArray count]];
   }
   [self.view addSubview:self.infoLabel];
   
@@ -238,7 +266,9 @@ typedef enum {
 
 - (void)swipedUp:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded &&
+      self.gameStatus == WSNGameStatusPlaying &&
+      self.direction != WSNSnakeDirectionDown)
   {
     self.direction = WSNSnakeDirectionUp;
   }
@@ -246,7 +276,9 @@ typedef enum {
 
 - (void)swipedRight:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded &&
+      self.gameStatus == WSNGameStatusPlaying &&
+      self.direction != WSNSnakeDirectionLeft)
   {
     self.direction = WSNSnakeDirectionRight;
   }
@@ -254,7 +286,9 @@ typedef enum {
 
 - (void)swipedDown:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded &&
+      self.gameStatus == WSNGameStatusPlaying &&
+      self.direction != WSNSnakeDirectionUp)
   {
     self.direction = WSNSnakeDirectionDown;
   }
@@ -262,7 +296,9 @@ typedef enum {
 
 - (void)swipedLeft:(UISwipeGestureRecognizer *)gesture
 {
-  if (gesture.state == UIGestureRecognizerStateEnded && self.gameStatus == WSNGameStatusPlaying)
+  if (gesture.state == UIGestureRecognizerStateEnded &&
+      self.gameStatus == WSNGameStatusPlaying &&
+      self.direction != WSNSnakeDirectionRight)
   {
     self.direction = WSNSnakeDirectionLeft;
   }
@@ -392,12 +428,12 @@ typedef enum {
 
 - (UIColor *)colorForSnakePointAtIndex:(NSUInteger)index
 {
-  return [UIColor blackColor];
+  return self.currentSnakeColors[index % [self.currentSnakeColors count]];
 }
 
 - (UIColor *)colorForFoodPointAtIndex:(NSUInteger)index
 {
-  return [UIColor blueColor];
+  return [UIColor blackColor];
 }
 
 - (UIColor *)colorForHighlightedPointAtIndex:(NSUInteger)index
