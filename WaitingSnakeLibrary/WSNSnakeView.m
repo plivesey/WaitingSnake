@@ -28,6 +28,7 @@
         width = 50;
     }
     WSNSnakeView *view = [[[self class] alloc] initWithFrame:STARTUP_FRAME];
+    view.backgroundColor = [UIColor whiteColor];
     view.squareWidth = floorf(width);
     [view updateGrid];
     return view;
@@ -51,7 +52,7 @@
     CGFloat squareWidth = self.squareWidth;
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    CGColorRef backgroundColor = [self.backgroundColor CGColor];
+    CGColorRef emptySquareColor = [self.emptySquareColor CGColor];
     // DEBUG
     CGColorRef debugTestColor = [[UIColor blueColor] CGColor];
     BOOL debugFlipper = NO;
@@ -65,7 +66,7 @@
             squareRect = CGRectMake(xCursor, yCursor, squareWidth, squareWidth);
             // DEBUG
             if (debugFlipper) {
-                CGContextSetFillColorWithColor(ctx, backgroundColor);
+                CGContextSetFillColorWithColor(ctx, emptySquareColor);
             }
             else {
                 CGContextSetFillColorWithColor(ctx, debugTestColor);
@@ -105,11 +106,11 @@
     }
 }
 
-- (UIColor *)backgroundColor {
-    if (!_backgroundColor) {
-        _backgroundColor = [UIColor greenColor];
+- (UIColor *)emptySquareColor {
+    if (!_emptySquareColor) {
+        _emptySquareColor = [UIColor whiteColor];
     }
-    return _backgroundColor;
+    return _emptySquareColor;
 }
 
 @end

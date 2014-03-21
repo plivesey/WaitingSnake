@@ -18,7 +18,7 @@
 
 @property (nonatomic, weak) id<WSNSnakeViewProtocol> delegate;
 
-@property (nonatomic, strong) UIColor *backgroundColor;
+@property (nonatomic, strong) UIColor *emptySquareColor;
 
 @property (nonatomic, readonly) NSUInteger rows;
 @property (nonatomic, readonly) NSUInteger columns;
