@@ -20,6 +20,9 @@
 
 @property (nonatomic, strong) UIColor *backgroundColor;
 
+@property (nonatomic, readonly) NSUInteger rows;
+@property (nonatomic, readonly) NSUInteger columns;
+
 /// Used to color the snake. Setting this property will redraw the screen.
 @property (nonatomic, strong) NSArray *snakePoints;
 /// Used to color special squares such as snake collisions. Takes precedence over other points. Setting this property will redraw the screen.
@@ -30,9 +33,7 @@
 /*!
  Instantiate and return a new instance of the snake view controller
  */
-+ (instancetype)snakeViewWithFrame:(CGRect)frame
-                          rowCount:(NSUInteger)rows
-                       columnCount:(NSUInteger)columns
-                          delegate:(id<WSNSnakeViewProtocol>)delegate;
++ (instancetype)snakeViewWithSquareWidth:(CGFloat)width
+                                delegate:(id<WSNSnakeViewProtocol>)delegate;
 
 @end
