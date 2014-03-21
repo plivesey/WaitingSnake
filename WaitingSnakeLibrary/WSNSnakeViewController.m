@@ -160,6 +160,9 @@ typedef enum {
   
   NSAssert(self.foodPoint, @"Why no food?");
   self.snakeView.foodPoints = @[self.foodPoint];
+  
+  self.infoLabel.text = @"Tap the screen to begin";
+  [self.view addSubview:self.infoLabel];
 }
 
 - (void)findNewFoodPoint
@@ -187,9 +190,6 @@ typedef enum {
   
   NSUInteger index = rand() % [possiblePoints count];
   self.foodPoint = [possiblePoints objectAtIndex:index];
-  
-  self.infoLabel.text = @"Tap the screen to bein";
-  [self.view addSubview:self.infoLabel];
 }
 
 - (void)resumeGame
