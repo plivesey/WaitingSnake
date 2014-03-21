@@ -93,6 +93,11 @@ typedef enum {
   UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                         action:@selector(tappedScreen:)];
   [self.view addGestureRecognizer:tap];
+  
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(pause)
+                                               name:UIApplicationWillResignActiveNotification
+                                             object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -104,6 +109,11 @@ typedef enum {
   {
     [self setupNewGame];
   }
+}
+
+- (void)dealloc
+{
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - Public Methods
