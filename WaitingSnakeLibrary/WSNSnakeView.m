@@ -13,7 +13,7 @@
 + (instancetype)snakeViewWithFrame:(CGRect)frame
                           rowCount:(NSUInteger)rows
                        columnCount:(NSUInteger)columns
-                          delegate:(id<WSNSnakeViewProtocol>)delegate s{
+                          delegate:(id<WSNSnakeViewProtocol>)delegate {
     // TODO: Implement
     return nil;
 }
