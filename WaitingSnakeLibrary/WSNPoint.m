@@ -26,4 +26,24 @@
   return point;
 }
 
+- (BOOL)isEqual:(id)object
+{
+  if (![object isKindOfClass:[WSNPoint class]])
+  {
+    return NO;
+  }
+  WSNPoint *otherPoint = object;
+  if (otherPoint.x == self.x && otherPoint.y == self.y)
+  {
+    return YES;
+  }
+  return NO;
+}
+
+- (NSUInteger)hash
+{
+  NSUInteger prime = 31;
+  return self.x + self.y * prime;
+}
+
 @end

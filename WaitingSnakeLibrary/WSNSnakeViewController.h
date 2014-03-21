@@ -20,7 +20,11 @@
 
 @interface WSNSnakeViewController : UIViewController
 
+@property (nonatomic) BOOL wallsWrapAround;
+
 @property (nonatomic, readonly) double score;
+
++ (instancetype)snakeViewControllerWithSquareSize:(NSInteger)squareSize;
 
 - (void)pause;
 - (void)unPause;
