@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 
 
+@protocol WSNSnakeDelegate;
+
 /*
  Ideas:
  
@@ -21,6 +23,7 @@
 @interface WSNSnakeViewController : UIViewController
 
 @property (nonatomic) BOOL wallsWrapAround;
+@property (nonatomic, weak) id<WSNSnakeDelegate> delegate;
 
 @property (nonatomic, readonly) double score;
 

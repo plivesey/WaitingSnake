@@ -29,7 +29,8 @@ typedef enum {
 typedef enum {
   WSNGameStatusSetup,
   WSNGameStatusPlaying,
-  WSNGameStatusPaused
+  WSNGameStatusPaused,
+  WSNGameStatusFinished
 } WSNGameStatus;
 
 @interface WSNSnakeViewController () <WSNSnakeViewProtocol>
@@ -109,23 +110,20 @@ typedef enum {
 
 - (void)pause
 {
-  
+  self.infoLabel.text = @"Game Paused.\nTap screen to continue.";
+  [self.snakeView addSubview:self.infoLabel];
+  [self.gameTimer invalidate];
 }
 
 - (void)unPause
 {
-  
+  [self resumeGame];
 }
 
 #pragma mark - Helpers
 
 - (void)setupNewGame
 {
-  NSAssert(self.snakeView.columns < STARTING_LENGTH * 2, @"The view isn't wide enough. It must be at least ten times as wide as the square width");
-  NSAssert(self.snakeView.rows < 4, @"The view isn't high enough. It must be at least four times as high as the square width");
-  
-  self.gameStatus = WSNGameStatusSetup;
-  
   for (UIView *view in self.view.subviews)
   {
     [view removeFromSuperview];
@@ -133,6 +131,12 @@ typedef enum {
   self.snakeView = [WSNSnakeView snakeViewWithSquareWidth:self.squareSize delegate:self];
   self.snakeView.frame = self.view.bounds;
   [self.view addSubview:self.snakeView];
+  
+  // Check the view is good to go.
+  NSAssert(self.snakeView.columns >= STARTING_LENGTH * 2, @"The view isn't wide enough. It must be at least ten times as wide as the square width");
+  NSAssert(self.snakeView.rows >= 4, @"The view isn't high enough. It must be at least four times as high as the square width");
+  
+  self.gameStatus = WSNGameStatusSetup;
   
   // Reset all data
   self.snakeArray = [NSMutableArray array];
@@ -142,7 +146,8 @@ typedef enum {
   for (int i = 0; i<STARTING_LENGTH; i++)
   {
     WSNPoint *point = [WSNPoint pointWithX:i y:startingY];
-    [self.snakeArray addObject:point];
+    // Start of the snake is the front of the array
+    [self.snakeArray insertObject:point atIndex:0];
     // This will keep overriding until the last point is the starting point
     self.currentPoint = point;
   }
@@ -175,18 +180,18 @@ typedef enum {
   
   if ([possiblePoints count] == 0)
   {
-    // VICTORY!
-    NSAssert(NO, @"Too bad...");
+    [self endGame:YES];
+    return;
   }
   
   NSUInteger index = rand() % [possiblePoints count];
   self.foodPoint = [possiblePoints objectAtIndex:index];
   
-  self.infoLabel.text = @"Tap the screen to being";
+  self.infoLabel.text = @"Tap the screen to bein";
   [self.view addSubview:self.infoLabel];
 }
 
-- (void)startGame
+- (void)resumeGame
 {
   [self.infoLabel removeFromSuperview];
   
@@ -195,6 +200,25 @@ typedef enum {
                                                   selector:@selector(timerFired)
                                                   userInfo:nil
                                                    repeats:YES];
+}
+
+- (void)endGame:(BOOL)won
+{
+  self.gameStatus = WSNGameStatusFinished;
+  
+  [self.gameTimer invalidate];
+  
+  if (won)
+  {
+    self.infoLabel.text = @"Somehow...you won snake. That's epic.\nTap to play again.";
+  }
+  else
+  {
+    self.infoLabel.text = [NSString stringWithFormat:@"Score: %d\nTap to play again.", [self.snakeArray count]];
+  }
+  [self.view addSubview:self.infoLabel];
+  
+  [self.delegate snakeViewController:self didFinishGameWithScore:[self.snakeArray count]];
 }
                     
 #pragma mark - User Interaction
@@ -235,9 +259,17 @@ typedef enum {
 {
   if (gesture.state == UIGestureRecognizerStateRecognized)
   {
-    if (self.gameStatus == WSNGameStatusSetup)
+    if (self.gameStatus == WSNGameStatusSetup || self.gameStatus == WSNGameStatusPaused)
     {
-      [self startGame];
+      [self resumeGame];
+    }
+    else if (self.gameStatus == WSNGameStatusPlaying)
+    {
+      [self pause];
+    }
+    else if (self.gameStatus == WSNGameStatusFinished)
+    {
+      [self setupNewGame];
     }
   }
 }
@@ -268,14 +300,7 @@ typedef enum {
   WSNPoint *collisionPoint = [self collisionPoint];
   if (collisionPoint)
   {
-    [[[UIAlertView alloc] initWithTitle:@"Lose"
-                                message:nil
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
-    [self.gameTimer invalidate];
-    self.gameTimer = nil;
-    
+    [self endGame:NO];
     self.snakeView.highlightedPoints = @[collisionPoint];
   }
   
@@ -296,10 +321,10 @@ typedef enum {
       nextPointY++;
       break;
     case WSNSnakeDirectionLeft:
-      nextPointY++;
+      nextPointX--;
       break;
     case WSNSnakeDirectionRight:
-      nextPointY++;
+      nextPointX++;
       break;
   }
   return [WSNPoint pointWithX:nextPointX y:nextPointY];
@@ -345,6 +370,7 @@ typedef enum {
   {
     _infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 70, self.view.frame.size.width-40, 200)];
     _infoLabel.backgroundColor = [UIColor grayColor];
+    _infoLabel.numberOfLines = 0;
   }
   return _infoLabel;
 }
