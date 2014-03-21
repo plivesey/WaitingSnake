@@ -359,24 +359,40 @@ typedef enum {
 
 - (WSNPoint *)nextPointFromCurrentPoint:(WSNPoint *)currentPoint
 {
-  NSUInteger nextPointX = currentPoint.x;
-  NSUInteger nextPointY = currentPoint.y;
-  switch (self.direction)
-  {
-    case WSNSnakeDirectionUp:
-      nextPointY--;
-      break;
-    case WSNSnakeDirectionDown:
-      nextPointY++;
-      break;
-    case WSNSnakeDirectionLeft:
-      nextPointX--;
-      break;
-    case WSNSnakeDirectionRight:
-      nextPointX++;
-      break;
-  }
-  return [WSNPoint pointWithX:nextPointX y:nextPointY];
+    // TODO: snake wraparound
+    NSInteger nextPointX = currentPoint.x;
+    NSInteger nextPointY = currentPoint.y;
+    switch (self.direction)
+    {
+        case WSNSnakeDirectionUp:
+            nextPointY--;
+            break;
+        case WSNSnakeDirectionDown:
+            nextPointY++;
+            break;
+        case WSNSnakeDirectionLeft:
+            nextPointX--;
+            break;
+        case WSNSnakeDirectionRight:
+            nextPointX++;
+            break;
+    }
+    if (self.wallsWrapAround) {
+        // Wrap the snake around if necessary
+        if (nextPointX < 0) {
+            nextPointX = self.snakeView.columns - 1;
+        }
+        else if (nextPointX >= self.snakeView.columns) {
+            nextPointX = 0;
+        }
+        if (nextPointY < 0) {
+            nextPointY = self.snakeView.rows - 1;
+        }
+        else if (nextPointY >= self.snakeView.rows) {
+            nextPointY = 0;
+        }
+    }
+    return [WSNPoint pointWithX:nextPointX y:nextPointY];
 }
 
 /*!
