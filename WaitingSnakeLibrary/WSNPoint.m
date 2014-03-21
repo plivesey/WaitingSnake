@@ -47,7 +47,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"WSNPoint: (%d, %d)", self.x, self.y];
+    return [NSString stringWithFormat:@"WSNPoint: (%ld, %ld)", (long)self.x, (long)self.y];
 }
 
 @end

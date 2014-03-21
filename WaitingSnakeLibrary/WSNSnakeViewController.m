@@ -83,6 +83,8 @@ typedef enum {
   viewController.numberOfSpeedups = 10;
   viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
   
+  viewController.wallsWrapAround = YES;
+  
   return viewController;
 }
 
@@ -450,7 +452,7 @@ typedef enum {
   WSNSnakeDirection newDirection = self.currentDirection;
   while ([self.pendingDirections count])
   {
-    WSNSnakeDirection nextPending = [[self.pendingDirections firstObject] integerValue];
+    WSNSnakeDirection nextPending = (WSNSnakeDirection)[[self.pendingDirections firstObject] integerValue];
     [self.pendingDirections removeObjectAtIndex:0];
     if (self.currentDirection == WSNSnakeDirectionLeft || self.currentDirection == WSNSnakeDirectionRight)
     {
