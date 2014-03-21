@@ -46,4 +46,8 @@
   return self.x + self.y * prime;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"WSNPoint: (%d, %d)", self.x, self.y];
+}
+
 @end
