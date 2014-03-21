@@ -17,6 +17,7 @@
 
 #define STARTING_LENGTH 5
 #define SECONDS_PER_MOVE .25
+#define FINAL_SECONDS_PER_MOVE  0.10
 
 
 typedef enum {
@@ -46,6 +47,9 @@ typedef enum {
 @property (nonatomic) WSNGameStatus gameStatus;
 
 @property (nonatomic, strong) NSTimer *gameTimer;
+@property (nonatomic, strong) NSTimer *speedupTimer;
+@property (nonatomic) NSUInteger speedupCount;
+@property (nonatomic) NSTimeInterval currentDelay;
 
 @property (nonatomic, strong) UILabel *infoLabel;
 
@@ -53,6 +57,11 @@ typedef enum {
 
 @property (nonatomic, strong) NSArray *possibleSnakeColors;
 @property (nonatomic, strong) NSArray *currentSnakeColors;
+
+@property (nonatomic) NSTimeInterval startingDelay;
+@property (nonatomic) NSTimeInterval endingDelay;
+@property (nonatomic) NSTimeInterval speedupDelay;
+@property (nonatomic) NSUInteger numberOfSpeedups;
 
 @end
 
@@ -64,9 +73,15 @@ typedef enum {
 
 + (instancetype)snakeViewControllerWithSquareSize:(NSInteger)squareSize
 {
-  WSNSnakeViewController *viewController = [[[self class] alloc] init];
-  viewController.squareSize = squareSize;
-  return viewController;
+    WSNSnakeViewController *viewController = [[[self class] alloc] init];
+    viewController.squareSize = squareSize;
+    
+    viewController.startingDelay = SECONDS_PER_MOVE;
+    viewController.speedupDelay = 5.0;
+    viewController.numberOfSpeedups = 10;
+    viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
+
+    return viewController;
 }
 
 - (void)viewDidLoad
@@ -112,6 +127,9 @@ typedef enum {
   [possibleSnakeColors addObject:[UIColor orangeColor]];
   [possibleSnakeColors addObject:[UIColor magentaColor]];
   self.possibleSnakeColors = possibleSnakeColors;
+    
+    self.speedupCount = 0;
+    self.currentDelay = self.startingDelay;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -134,10 +152,11 @@ typedef enum {
 
 - (void)pause
 {
-  self.gameStatus = WSNGameStatusPaused;
-  self.infoLabel.text = @"Game Paused.\nTap screen to continue.";
-  [self.snakeView addSubview:self.infoLabel];
-  [self.gameTimer invalidate];
+    self.gameStatus = WSNGameStatusPaused;
+    self.infoLabel.text = @"Game Paused.\nTap screen to continue.";
+    [self.snakeView addSubview:self.infoLabel];
+    [self.gameTimer invalidate];
+    [self.speedupTimer invalidate];
 }
 
 - (void)unPause
@@ -149,6 +168,9 @@ typedef enum {
 
 - (void)setupNewGame
 {
+    self.currentDelay = self.startingDelay;
+    self.speedupCount = 0;
+    
   for (UIView *view in self.view.subviews)
   {
     [view removeFromSuperview];
@@ -232,15 +254,20 @@ typedef enum {
 
 - (void)resumeGame
 {
-  self.gameStatus = WSNGameStatusPlaying;
-  
-  [self.infoLabel removeFromSuperview];
-  
-  self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:SECONDS_PER_MOVE
-                                                    target:self
-                                                  selector:@selector(timerFired)
-                                                  userInfo:nil
-                                                   repeats:YES];
+    self.gameStatus = WSNGameStatusPlaying;
+    
+    [self.infoLabel removeFromSuperview];
+    
+    self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
+                                                      target:self
+                                                    selector:@selector(timerFired)
+                                                    userInfo:nil
+                                                     repeats:NO];
+    self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
+                                                         target:self
+                                                       selector:@selector(speedupTimerFired)
+                                                       userInfo:nil
+                                                        repeats:NO];
 }
 
 - (void)endGame:(BOOL)won
@@ -327,39 +354,60 @@ typedef enum {
                     
 - (void)timerFired
 {
-  WSNPoint *firstPoint = [self.snakeArray firstObject];
-  
-  [self.snakeArray insertObject:[self nextPointFromCurrentPoint:firstPoint]
-                        atIndex:0];
-  // New current point
-  self.currentPoint = [self.snakeArray firstObject];
-  
-  if ([self.snakeArray containsObject:self.foodPoint])
-  {
-    // We ate some food. Array is now one longer and we need more food.
-    [self findNewFoodPoint];
-  }
-  else
-  {
-    // We're moving, so remove last point
-    [self.snakeArray removeLastObject];
-  }
-  
-  // Now let's check for collisions. Only the new point can possible collide because the rest haven't moved.
-  WSNPoint *collisionPoint = [self collisionPoint];
-  if (collisionPoint)
-  {
-    [self endGame:NO];
-    self.snakeView.highlightedPoints = @[collisionPoint];
-  }
-  
-  self.snakeView.snakePoints = self.snakeArray;
-  self.snakeView.foodPoints = @[self.foodPoint];
+    WSNPoint *firstPoint = [self.snakeArray firstObject];
+    
+    [self.snakeArray insertObject:[self nextPointFromCurrentPoint:firstPoint]
+                          atIndex:0];
+    // New current point
+    self.currentPoint = [self.snakeArray firstObject];
+    
+    if ([self.snakeArray containsObject:self.foodPoint])
+    {
+        // We ate some food. Array is now one longer and we need more food.
+        [self findNewFoodPoint];
+    }
+    else
+    {
+        // We're moving, so remove last point
+        [self.snakeArray removeLastObject];
+    }
+    
+    // Now let's check for collisions. Only the new point can possible collide because the rest haven't moved.
+    WSNPoint *collisionPoint = [self collisionPoint];
+    if (collisionPoint)
+    {
+        [self endGame:NO];
+        self.snakeView.highlightedPoints = @[collisionPoint];
+    }
+    
+    self.snakeView.snakePoints = self.snakeArray;
+    self.snakeView.foodPoints = @[self.foodPoint];
+    if ([self.gameTimer isValid]) {
+        self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
+                                                          target:self
+                                                        selector:@selector(timerFired)
+                                                        userInfo:nil
+                                                         repeats:NO];
+    }
+}
+
+- (void)speedupTimerFired {
+    // Speed the snake up
+    if (self.speedupCount == self.numberOfSpeedups) {
+        [self.speedupTimer invalidate];
+        return;
+    }
+    self.speedupCount++;
+    self.currentDelay += (self.endingDelay - self.startingDelay)/((CGFloat) self.numberOfSpeedups);
+    self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
+                                                         target:self
+                                                       selector:@selector(speedupTimerFired)
+                                                       userInfo:nil
+                                                        repeats:NO];
 }
 
 - (WSNPoint *)nextPointFromCurrentPoint:(WSNPoint *)currentPoint
 {
-    // TODO: snake wraparound
     NSInteger nextPointX = currentPoint.x;
     NSInteger nextPointY = currentPoint.y;
     switch (self.direction)
