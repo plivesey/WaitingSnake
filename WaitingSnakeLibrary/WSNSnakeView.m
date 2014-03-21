@@ -84,7 +84,7 @@
     // Draw the squares in foodPoints
     NSUInteger idx = 0;
     for (WSNPoint *pt in self.foodPoints) {
-        if (!(pt.x < self.rows && pt.y < self.columns)) {
+        if (!(pt.y < self.rows && pt.x < self.columns)) {
             idx++;
             NSLog(@"Warning: out of bounds food point detected");
             continue;
@@ -101,7 +101,7 @@
     // Draw the squares in snakePoints
     idx = 0;
     for (WSNPoint *pt in self.snakePoints) {
-        if (!(pt.x < self.rows && pt.y < self.columns)) {
+        if (!(pt.y < self.rows && pt.x < self.columns)) {
             idx++;
             NSLog(@"Warning: out of bounds snake point detected");
             continue;
@@ -118,7 +118,7 @@
     // Draw the squares in highlightedPoints
     idx = 0;
     for (WSNPoint *pt in self.highlightedPoints) {
-        if (!(pt.x < self.rows && pt.y < self.columns)) {
+        if (!(pt.y < self.rows && pt.x < self.columns)) {
             idx++;
             NSLog(@"Warning: out of bounds highlighted point detected");
             continue;
