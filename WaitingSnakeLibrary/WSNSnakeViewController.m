@@ -15,10 +15,14 @@
 #import <stdlib.h>
 
 
-#define STARTING_LENGTH 5
-#define SECONDS_PER_MOVE .25
-#define FINAL_SECONDS_PER_MOVE  0.10
-
+// Defaults
+#define STARTING_LENGTH             5
+// Timing Defaults
+#define STARTING_SECONDS_PER_MOVE   0.20
+#define FINAL_SECONDS_PER_MOVE      0.10
+#define NUMBER_OF_SPEEDUPS          10
+// This way the speed ups will take 240 seconds (4 minutes)
+#define TIME_BETWEEN_SPEEDUPS       (240 / NUMBER_OF_SPEEDUPS)
 
 typedef enum {
   WSNSnakeDirectionRight,
@@ -69,8 +73,6 @@ typedef enum {
 
 @implementation WSNSnakeViewController
 
-@dynamic view;
-
 #pragma mark - Life Cycle
 
 + (instancetype)snakeViewControllerWithSquareSize:(NSInteger)squareSize
@@ -78,7 +80,8 @@ typedef enum {
   WSNSnakeViewController *viewController = [[[self class] alloc] init];
   viewController.squareSize = squareSize;
   
-  viewController.startingDelay = SECONDS_PER_MOVE;
+  // Defaults
+  viewController.startingDelay = STARTING_SECONDS_PER_MOVE;
   viewController.speedupDelay = 5.0;
   viewController.numberOfSpeedups = 10;
   viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
@@ -112,9 +115,14 @@ typedef enum {
   swipe.direction = UISwipeGestureRecognizerDirectionRight;
   [self.view addGestureRecognizer:swipe];
   
-  UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                        action:@selector(tappedScreen:)];
-  [self.view addGestureRecognizer:tap];
+  UITapGestureRecognizer *pauseTap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                        action:@selector(pauseTappedScreen:)];
+  pauseTap.numberOfTapsRequired = 3;
+  [self.view addGestureRecognizer:pauseTap];
+  
+  UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                              action:@selector(singleTappedScreen:)];
+  [self.view addGestureRecognizer:singleTap];
   
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(pause)
@@ -132,8 +140,8 @@ typedef enum {
   [possibleSnakeColors addObject:[UIColor magentaColor]];
   self.possibleSnakeColors = possibleSnakeColors;
     
-    self.speedupCount = 0;
-    self.currentDelay = self.startingDelay;
+  self.speedupCount = 0;
+  self.currentDelay = self.startingDelay;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -156,11 +164,15 @@ typedef enum {
 
 - (void)pause
 {
+  // Don't double pause or pause if we're not playing
+  if (self.gameStatus == WSNGameStatusPlaying)
+  {
     self.gameStatus = WSNGameStatusPaused;
     self.infoLabel.text = @"Game Paused.\nTap screen to continue.";
     [self.snakeView addSubview:self.infoLabel];
     [self.gameTimer invalidate];
     [self.speedupTimer invalidate];
+  }
 }
 
 - (void)unPause
@@ -258,20 +270,25 @@ typedef enum {
 
 - (void)resumeGame
 {
-    self.gameStatus = WSNGameStatusPlaying;
-    
-    [self.infoLabel removeFromSuperview];
-    
-    self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
-                                                      target:self
-                                                    selector:@selector(timerFired)
-                                                    userInfo:nil
-                                                     repeats:NO];
-    self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
-                                                         target:self
-                                                       selector:@selector(speedupTimerFired)
-                                                       userInfo:nil
-                                                        repeats:NO];
+  if (self.gameStatus == WSNGameStatusPlaying)
+  {
+    // Don't reresume if we're already playing
+    return;
+  }
+  self.gameStatus = WSNGameStatusPlaying;
+  
+  [self.infoLabel removeFromSuperview];
+  
+  self.gameTimer = [NSTimer scheduledTimerWithTimeInterval:self.currentDelay
+                                                    target:self
+                                                  selector:@selector(timerFired)
+                                                  userInfo:nil
+                                                   repeats:NO];
+  self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
+                                                       target:self
+                                                     selector:@selector(speedupTimerFired)
+                                                     userInfo:nil
+                                                      repeats:NO];
 }
 
 - (void)endGame:(BOOL)won
@@ -331,7 +348,7 @@ typedef enum {
   }
 }
 
-- (void)tappedScreen:(UITapGestureRecognizer *)gesture
+- (void)singleTappedScreen:(UITapGestureRecognizer *)gesture
 {
   if (gesture.state == UIGestureRecognizerStateEnded)
   {
@@ -339,14 +356,63 @@ typedef enum {
     {
       [self resumeGame];
     }
-    else if (self.gameStatus == WSNGameStatusPlaying)
-    {
-      [self pause];
-    }
     else if (self.gameStatus == WSNGameStatusFinished)
     {
       [self setupNewGame];
     }
+    else if (self.tapControlsEnabled &&
+             gesture.state == UIGestureRecognizerStateEnded &&
+             self.gameStatus == WSNGameStatusPlaying)
+    {
+      CGPoint gestureLocation = [gesture locationInView:self.view];
+      
+      CGPoint center = self.view.center;
+      if (self.tapControlsScreenCenter.x > 0 &&
+          self.tapControlsScreenCenter.y > 0)
+      {
+        center = self.tapControlsScreenCenter;
+      }
+      
+      WSNSnakeDirection lastDirection = self.currentDirection;
+      if ([self.pendingDirections lastObject])
+      {
+        lastDirection = (WSNSnakeDirection)[[self.pendingDirections lastObject] longValue];
+      }
+      
+      if (lastDirection == WSNSnakeDirectionDown ||
+          lastDirection == WSNSnakeDirectionUp)
+      {
+        // Last was up or down, so this tap will be for left or right
+        if (gestureLocation.x > center.x)
+        {
+          [self.pendingDirections addObject:@(WSNSnakeDirectionRight)];
+        }
+        else
+        {
+          [self.pendingDirections addObject:@(WSNSnakeDirectionLeft)];
+        }
+      }
+      else
+      {
+        // Last was left or right, so this one is going to be up or down
+        if (gestureLocation.y > center.y)
+        {
+          [self.pendingDirections addObject:@(WSNSnakeDirectionDown)];
+        }
+        else
+        {
+          [self.pendingDirections addObject:@(WSNSnakeDirectionUp)];
+        }
+      }
+    }
+  }
+}
+
+- (void)pauseTappedScreen:(UITapGestureRecognizer *)gesture
+{
+  if (self.gameStatus == WSNGameStatusPlaying)
+  {
+    [self pause];
   }
 }
 

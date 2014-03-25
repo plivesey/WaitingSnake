@@ -23,6 +23,9 @@
 @interface WSNSnakeViewController : UIViewController
 
 @property (nonatomic) BOOL wallsWrapAround;
+@property (nonatomic) BOOL tapControlsEnabled;
+// By default the 'center' of the screen is in the middle. But you can change this if you want.
+@property (nonatomic) CGPoint tapControlsScreenCenter;
 @property (nonatomic, weak) id<WSNSnakeDelegate> delegate;
 
 @property (nonatomic, readonly) double score;

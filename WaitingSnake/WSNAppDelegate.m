@@ -17,7 +17,10 @@
 {
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   
-  self.window.rootViewController = [WSNSnakeViewController snakeViewControllerWithSquareSize:24];
+  WSNSnakeViewController *viewController = [WSNSnakeViewController snakeViewControllerWithSquareSize:24];
+  self.window.rootViewController = viewController;
+  viewController.tapControlsEnabled = YES;
+  viewController.wallsWrapAround = YES;
   
   self.window.backgroundColor = [UIColor whiteColor];
   [self.window makeKeyAndVisible];
