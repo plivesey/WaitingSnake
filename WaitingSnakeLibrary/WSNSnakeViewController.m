@@ -86,14 +86,16 @@ typedef enum {
   viewController.numberOfSpeedups = 10;
   viewController.endingDelay = FINAL_SECONDS_PER_MOVE;
   
-  viewController.wallsWrapAround = YES;
-  
   return viewController;
 }
 
 - (void)viewDidLoad
 {
   [super viewDidLoad];
+    
+  self.title = @"Snake";
+  self.edgesForExtendedLayout = UIRectEdgeNone;
+  self.navigationController.interactivePopGestureRecognizer.enabled = NO;
   
   UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self
                                                                               action:@selector(swipedDown:)];
@@ -158,6 +160,16 @@ typedef enum {
 - (void)dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(BOOL)shouldAutorotate
+{
+  return NO;
+}
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+  return UIInterfaceOrientationMaskPortrait;
 }
 
 #pragma mark - Public Methods
@@ -225,7 +237,7 @@ typedef enum {
   NSAssert(self.foodPoint, @"Why no food?");
   self.snakeView.foodPoints = @[self.foodPoint];
   
-  self.infoLabel.text = @"Tap the screen to begin";
+  self.infoLabel.text = @"Tap the screen to begin. \n Swipe up, down, left, and right to control your snake.";
   [self.view addSubview:self.infoLabel];
 }
 

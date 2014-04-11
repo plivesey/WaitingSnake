@@ -17,7 +17,7 @@
 {
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   
-  WSNSnakeViewController *viewController = [WSNSnakeViewController snakeViewControllerWithSquareSize:24];
+  WSNSnakeViewController *viewController = [WSNSnakeViewController snakeViewControllerWithSquareSize:20];
   self.window.rootViewController = viewController;
   viewController.tapControlsEnabled = YES;
   viewController.wallsWrapAround = YES;
