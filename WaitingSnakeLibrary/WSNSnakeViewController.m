@@ -13,6 +13,8 @@
 #import "WSNPoint.h"
 // Random
 #import <stdlib.h>
+// Other
+#import "WSNScoreModule.h"
 
 
 // Defaults
@@ -41,6 +43,7 @@ typedef enum {
 @interface WSNSnakeViewController () <WSNSnakeViewProtocol>
 
 @property (nonatomic, strong) WSNSnakeView *snakeView;
+@property (nonatomic, strong) UILabel *scoreLabel;
 
 @property (nonatomic) NSInteger squareSize;
 @property (nonatomic, strong) NSMutableArray *snakeArray;
@@ -69,6 +72,8 @@ typedef enum {
 @property (nonatomic) NSTimeInterval speedupDelay;
 @property (nonatomic) NSUInteger numberOfSpeedups;
 
+@property (nonatomic, strong) WSNScoreModule *scoreModule;
+
 @end
 
 @implementation WSNSnakeViewController
@@ -96,6 +101,18 @@ typedef enum {
   self.title = @"Snake";
   self.edgesForExtendedLayout = UIRectEdgeNone;
   self.navigationController.interactivePopGestureRecognizer.enabled = NO;
+  
+  // These colors are hilariously ugly
+  self.possibleSnakeColors = @[[UIColor purpleColor],
+                               [UIColor yellowColor],
+                               [UIColor greenColor],
+                               [UIColor blueColor],
+                               [UIColor cyanColor],
+                               [UIColor orangeColor],
+                               [UIColor magentaColor]];
+  
+  [self setupNewGame];
+  [self setupScoreLabel];
   
   UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self
                                                                               action:@selector(swipedDown:)];
@@ -130,31 +147,39 @@ typedef enum {
                                            selector:@selector(pause)
                                                name:UIApplicationWillResignActiveNotification
                                              object:nil];
-  
-  // These colors are hilariously ugly
-  NSMutableArray *possibleSnakeColors = [NSMutableArray array];
-  [possibleSnakeColors addObject:[UIColor purpleColor]];
-  [possibleSnakeColors addObject:[UIColor yellowColor]];
-  [possibleSnakeColors addObject:[UIColor greenColor]];
-  [possibleSnakeColors addObject:[UIColor blueColor]];
-  [possibleSnakeColors addObject:[UIColor cyanColor]];
-  [possibleSnakeColors addObject:[UIColor orangeColor]];
-  [possibleSnakeColors addObject:[UIColor magentaColor]];
-  self.possibleSnakeColors = possibleSnakeColors;
-    
   self.speedupCount = 0;
   self.currentDelay = self.startingDelay;
+}
+
+- (void)setupScoreLabel {
+  if (self.scoreLabel) {
+    // Clean up previous game state
+    [self.scoreLabel removeFromSuperview];
+    self.scoreLabel = nil;
+  }
+  const CGFloat labelWidth = 200;
+  const CGFloat labelHeight = 80;
+  const CGFloat labelY = 10;
+  const CGFloat labelX = 0.5*((self.view.bounds.size.width - labelWidth > 0)
+                              ? self.view.bounds.size.width - labelWidth
+                              : 0);
+  UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(labelX, labelY, labelWidth, labelHeight)];
+  label.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:16];
+  label.textAlignment = NSTextAlignmentCenter;
+  label.text = [NSString stringWithFormat:@"SCORE: %ld", (long)self.scoreModule.score];
+  
+  [self.view addSubview:label];
+  self.scoreLabel = label;
+  
+  __weak typeof(self) __self = self;
+  self.scoreModule.scoreChangeBlock = ^(NSInteger score, NSInteger scoreDelta) {
+    __self.scoreLabel.text = [NSString stringWithFormat:@"SCORE: %ld", (long)score];
+  };
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
   [super viewWillAppear:animated];
-  
-  // Let's do setup win view will appear so we have an accurate idea of our view height
-  if (!self.initialized)
-  {
-    [self setupNewGame];
-  }
 }
 
 - (void)dealloc
@@ -196,9 +221,10 @@ typedef enum {
 
 - (void)setupNewGame
 {
-    self.currentDelay = self.startingDelay;
-    self.speedupCount = 0;
-    
+  self.currentDelay = self.startingDelay;
+  self.speedupCount = 0;
+  [self.scoreModule reset];
+  
   for (UIView *view in self.view.subviews)
   {
     [view removeFromSuperview];
@@ -208,8 +234,10 @@ typedef enum {
   [self.view addSubview:self.snakeView];
   
   // Check the view is good to go.
-  NSAssert(self.snakeView.columns >= STARTING_LENGTH * 2, @"The view isn't wide enough. It must be at least ten times as wide as the square width");
-  NSAssert(self.snakeView.rows >= 4, @"The view isn't high enough. It must be at least four times as high as the square width");
+  NSAssert(self.snakeView.columns >= STARTING_LENGTH * 2,
+           @"The view isn't wide enough. It must be at least ten times as wide as the square width");
+  NSAssert(self.snakeView.rows >= 4,
+           @"The view isn't high enough. It must be at least four times as high as the square width");
   
   self.gameStatus = WSNGameStatusSetup;
   
@@ -315,13 +343,14 @@ typedef enum {
   }
   else
   {
-    self.infoLabel.text = [NSString stringWithFormat:@"Score: %lu\nTap to play again.", (unsigned long)[self.snakeArray count]];
+    self.infoLabel.text = [NSString stringWithFormat:@"Score: %lu\nTap to play again.",
+                           (unsigned long)self.scoreModule.score];
   }
   [self.view addSubview:self.infoLabel];
   
-  [self.delegate snakeViewController:self didFinishGameWithScore:[self.snakeArray count]];
+  [self.delegate snakeViewController:self didFinishGameWithScore:self.scoreModule.score];
 }
-                    
+
 #pragma mark - User Interaction
 
 - (void)swipedUp:(UISwipeGestureRecognizer *)gesture
@@ -371,6 +400,7 @@ typedef enum {
     else if (self.gameStatus == WSNGameStatusFinished)
     {
       [self setupNewGame];
+      [self setupScoreLabel];
     }
     else if (self.tapControlsEnabled &&
              gesture.state == UIGestureRecognizerStateEnded &&
@@ -443,6 +473,7 @@ typedef enum {
   {
     // We ate some food. Array is now one longer and we need more food.
     [self findNewFoodPoint];
+    [self.scoreModule incrementScore];
   }
   else
   {
@@ -470,18 +501,18 @@ typedef enum {
 }
 
 - (void)speedupTimerFired {
-    // Speed the snake up
-    if (self.speedupCount == self.numberOfSpeedups) {
-        [self.speedupTimer invalidate];
-        return;
-    }
-    self.speedupCount++;
-    self.currentDelay += (self.endingDelay - self.startingDelay)/((CGFloat) self.numberOfSpeedups);
-    self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
-                                                         target:self
-                                                       selector:@selector(speedupTimerFired)
-                                                       userInfo:nil
-                                                        repeats:NO];
+  // Speed the snake up
+  if (self.speedupCount == self.numberOfSpeedups) {
+    [self.speedupTimer invalidate];
+    return;
+  }
+  self.speedupCount++;
+  self.currentDelay += (self.endingDelay - self.startingDelay)/((CGFloat) self.numberOfSpeedups);
+  self.speedupTimer = [NSTimer scheduledTimerWithTimeInterval:self.speedupDelay
+                                                       target:self
+                                                     selector:@selector(speedupTimerFired)
+                                                     userInfo:nil
+                                                      repeats:NO];
 }
 
 - (WSNPoint *)nextPointFromCurrentPoint:(WSNPoint *)currentPoint
@@ -615,6 +646,17 @@ typedef enum {
   return _pendingDirections;
 }
 
+- (WSNScoreModule *)scoreModule {
+  if (!_scoreModule) {
+    _scoreModule = [WSNScoreModule scoreModule];
+  }
+  return _scoreModule;
+}
+
+- (NSInteger)score {
+  return self.scoreModule.score;
+}
+
 #pragma mark - Snake View Delegate
 
 - (UIColor *)colorForSnakePointAtIndex:(NSUInteger)index
@@ -631,6 +673,5 @@ typedef enum {
 {
   return [UIColor redColor];
 }
-
 
 @end

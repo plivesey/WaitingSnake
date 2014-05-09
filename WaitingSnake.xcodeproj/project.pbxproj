@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A4BB059191CB5F800FF736A /* WSNScoreModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4BB058191CB5F800FF736A /* WSNScoreModule.m */; };
 		36D667EB18DC9DC7000A0444 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36D667EA18DC9DC7000A0444 /* Foundation.framework */; };
 		36D667ED18DC9DC7000A0444 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36D667EC18DC9DC7000A0444 /* CoreGraphics.framework */; };
 		36D667EF18DC9DC7000A0444 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36D667EE18DC9DC7000A0444 /* UIKit.framework */; };
@@ -35,6 +36,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A4BB057191CB5F800FF736A /* WSNScoreModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WSNScoreModule.h; sourceTree = "<group>"; };
+		1A4BB058191CB5F800FF736A /* WSNScoreModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WSNScoreModule.m; sourceTree = "<group>"; };
 		36D667E718DC9DC7000A0444 /* WaitingSnake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WaitingSnake.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36D667EA18DC9DC7000A0444 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		36D667EC18DC9DC7000A0444 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -163,6 +166,8 @@
 				36D6681E18DC9F74000A0444 /* WSNSnakeView.m */,
 				36D6682018DCA03A000A0444 /* WSNPoint.h */,
 				36D6682118DCA03A000A0444 /* WSNPoint.m */,
+				1A4BB057191CB5F800FF736A /* WSNScoreModule.h */,
+				1A4BB058191CB5F800FF736A /* WSNScoreModule.m */,
 			);
 			path = WaitingSnakeLibrary;
 			sourceTree = "<group>";
@@ -264,6 +269,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				36D667F718DC9DC7000A0444 /* main.m in Sources */,
+				1A4BB059191CB5F800FF736A /* WSNScoreModule.m in Sources */,
 				36D667FB18DC9DC7000A0444 /* WSNAppDelegate.m in Sources */,
 				36D6681F18DC9F74000A0444 /* WSNSnakeView.m in Sources */,
 				36D6682218DCA03A000A0444 /* WSNPoint.m in Sources */,

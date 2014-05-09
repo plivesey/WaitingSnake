@@ -28,7 +28,7 @@
 @property (nonatomic) CGPoint tapControlsScreenCenter;
 @property (nonatomic, weak) id<WSNSnakeDelegate> delegate;
 
-@property (nonatomic, readonly) double score;
+@property (nonatomic, readonly) NSInteger score;
 
 + (instancetype)snakeViewControllerWithSquareSize:(NSInteger)squareSize;
 
